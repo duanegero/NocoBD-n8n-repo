@@ -1,0 +1,533 @@
+{
+  "name": "Update Record Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5e2a9205-1a67-439b-90ce-8c3d31e0e5b9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        64
+      ],
+      "id": "b2f94933-8588-4893-90b2-377dae3f560f",
+      "name": "Record Update Webhook",
+      "webhookId": "5e2a9205-1a67-439b-90ce-8c3d31e0e5b9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c22c9da3-7b41-4c3e-8173-8780090422f9",
+              "leftValue": "={{ $json.body.data.rows[0].status }}",
+              "rightValue": "Closed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a2ad4e7e-ab90-4434-a5f0-d774f0573869",
+              "leftValue": "={{ $json.body.data.previous_rows[0].status }}",
+              "rightValue": "closed",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "9fe99d74-3e22-4702-93ca-f82153d0be98",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -416
+      ],
+      "id": "71f9cd5e-73a2-436a-88f2-d165a75c8c77",
+      "name": "Closed If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5db95016-c527-4b12-ba57-3fbe92c42d38",
+              "leftValue": "={{ $json.body.data.rows[0].priority }}",
+              "rightValue": "Critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "d2f184a5-695d-4b12-8640-5da035847736",
+              "leftValue": "={{ $json.body.data.previous_rows[0].priority }}",
+              "rightValue": "Critical",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        160
+      ],
+      "id": "4eefae42-0d03-489d-9f30-5cc170efa80e",
+      "name": "Critical If"
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Closed",
+        "message": "=Hello\n<br>\n<br>\nThe status of {{ $json.body.data.rows[0].request_title }} hhas changed:<br>\nPrevious: <b>{{ $json.body.data.previous_rows[0].status }}</b><br>\nUpdated:<b>{{ $json.body.data.rows[0].status }}</b><br>\n<br>\nResolution:<i><b>{{ $('Record Update Webhook').item.json.body.data.rows[0].resolution }}</b></i>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        -416
+      ],
+      "id": "816fb41d-6a7d-4808-bede-82b7a73efb1d",
+      "name": "Send Closed Email",
+      "webhookId": "df560af6-da5e-4df2-bfae-8b5afd0cc4bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Update Critical",
+        "message": "=Hello\n<br>\n<br>\nThe priority of {{ $json.body.data.rows[0].request_title }} has changed:<br>\nPrevious: <b>{{ $json.body.data.previous_rows[0].priority }}</b><br>\nUpdated:<b>{{ $json.body.data.rows[0].priority }}</b><br>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        160
+      ],
+      "id": "12bd7bef-9dd1-40b6-a342-c9f6a4727a84",
+      "name": "Send Critical Email",
+      "webhookId": "9b3a9eb2-d6de-4a39-bc92-4cb4813a1ffc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b6f01df3-0102-4d89-b1f2-25e906e80b22",
+              "leftValue": "={{ $json.body.data.rows[0].status }}",
+              "rightValue": "Resolved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "125a12a5-241d-42fd-9369-dbf05a029800",
+              "leftValue": "={{ $json.body.data.previous_rows[0].status }}",
+              "rightValue": "Resolved",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -224
+      ],
+      "id": "c45bfc74-f787-4578-b0c3-4602f2a20baa",
+      "name": "Resolved If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b6f01df3-0102-4d89-b1f2-25e906e80b22",
+              "leftValue": "={{ $json.body.data.rows[0].status }}",
+              "rightValue": "In Progress",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "125a12a5-241d-42fd-9369-dbf05a029800",
+              "leftValue": "={{ $json.body.data.previous_rows[0].status }}",
+              "rightValue": "In Progress",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -32
+      ],
+      "id": "3e94aa72-4de1-4882-be02-6b193e13232e",
+      "name": "In Progress If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5db95016-c527-4b12-ba57-3fbe92c42d38",
+              "leftValue": "={{ $json.body.data.rows[0].priority }}",
+              "rightValue": "High",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "d2f184a5-695d-4b12-8640-5da035847736",
+              "leftValue": "={{ $json.body.data.previous_rows[0].priority }}",
+              "rightValue": "High",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        352
+      ],
+      "id": "37db1b59-5b25-42d8-b6d6-32a89e8afd8e",
+      "name": "High If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9134c8d7-1641-4368-9f86-fc14e87d424c",
+              "leftValue": "={{ $json.body.data.rows[0].resolution }}",
+              "rightValue": "={{ $json.body.data.previous_rows[0].resolution }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        544
+      ],
+      "id": "d31feddb-0bd6-40c4-9ed5-26a5fe185e91",
+      "name": "Resolution If"
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Closed",
+        "message": "=Hello\n<br>\n<br>\nThe status of {{ $json.body.data.rows[0].request_title }} has changed:<br>\nPrevious: <b>{{ $json.body.data.previous_rows[0].status }}</b><br>\nUpdated:<b>{{ $json.body.data.rows[0].status }}</b><br>\n<br>\nResolution:<i><b>{{ $('Record Update Webhook').item.json.body.data.rows[0].resolution }}</b></i>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        -224
+      ],
+      "id": "dd59131c-19ba-43d1-9020-147a7c9a2ff7",
+      "name": "Send Resolved Email",
+      "webhookId": "df560af6-da5e-4df2-bfae-8b5afd0cc4bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Closed",
+        "message": "=Hello\n<br>\n<br>\nThe status of {{ $json.body.data.rows[0].request_title }} has changed:<br>\nPrevious: <b>{{ $json.body.data.previous_rows[0].status }}</b><br>\nUpdated:<b>{{ $json.body.data.rows[0].status }}</b><br>\n<br>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        -32
+      ],
+      "id": "d7f6874f-9287-4338-9620-5e708afc7205",
+      "name": "Send In Progress Email",
+      "webhookId": "df560af6-da5e-4df2-bfae-8b5afd0cc4bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Update High",
+        "message": "=Hello\n<br>\n<br>\nThe priority of {{ $json.body.data.rows[0].request_title }} has changed:<br>\nPrevious: <b>{{ $json.body.data.previous_rows[0].priority }}</b><br>\nUpdated:<b>{{ $json.body.data.rows[0].priority }}</b><br>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        128,
+        352
+      ],
+      "id": "06bafbd0-e1ef-410f-8da2-538c3e0f344e",
+      "name": "Send High Email",
+      "webhookId": "9b3a9eb2-d6de-4a39-bc92-4cb4813a1ffc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "Update Resolution",
+        "message": "=Hello\n<br>\n<br>\nThere has been a resulation for {{ $json.body.data.rows[0].request_title }} has changed:<br>\n\nResolution:<i><b>{{ $('Record Update Webhook').item.json.body.data.rows[0].resolution }}</b></i>\n\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $json.body.data.rows[0].Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        544
+      ],
+      "id": "3bdf89cb-e1bb-4759-96dd-013e2ad5aaf2",
+      "name": "Send Resolution Email1",
+      "webhookId": "9b3a9eb2-d6de-4a39-bc92-4cb4813a1ffc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Record Update Webhook": {
+      "main": [
+        [
+          {
+            "node": "Closed If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Critical If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resolved If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "In Progress If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "High If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resolution If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Closed If": {
+      "main": [
+        [
+          {
+            "node": "Send Closed Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critical If": {
+      "main": [
+        [
+          {
+            "node": "Send Critical Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolved If": {
+      "main": [
+        [
+          {
+            "node": "Send Resolved Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "In Progress If": {
+      "main": [
+        [
+          {
+            "node": "Send In Progress Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High If": {
+      "main": [
+        [
+          {
+            "node": "Send High Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolution If": {
+      "main": [
+        [
+          {
+            "node": "Send Resolution Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2af32b0f-38d3-4198-a44d-f48014a48ccf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
+  },
+  "id": "oqW5N9iaQagAgrb6",
+  "tags": []
+}

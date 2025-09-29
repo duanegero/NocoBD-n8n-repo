@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: duane
+      POSTGRES_PASSWORD: duane_password
+      POSTGRES_DB: n8n_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n_network
+
+volumes:
+  postgres_data:
+
+networks:
+  n8n_network:
+    external: true

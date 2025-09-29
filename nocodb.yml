@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: nocodb
+    ports:
+      - "8080:8080"
+    volumes:
+      - nocodb_data:/usr/app/data
+    networks:
+      - n8n_network
+    environment:
+      NC_ALLOW_LOCAL_HOOKS: "true"
+
+volumes:
+  nocodb_data:
+
+networks:
+  n8n_network:
+    external: true

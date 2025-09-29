@@ -1,0 +1,133 @@
+{
+  "name": "Daily Critical/High Email",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "p7awyatqrlauhhz",
+        "table": "mvcdyjrtodxgbj0",
+        "returnAll": true,
+        "options": {
+          "where": "@((priority,eq,Critical)~or(priority,eq,High))~and((status,eq,Open)~or(status,eq,In Progress))"
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3e4b6a9a-3ec5-4584-8da0-6b3f986edd3f",
+      "name": "Get many rows",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "0jPJYo279HZvTqNL",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function generateHtmlTable(items) {\n    if (!items || items.length === 0) {\n        return \"<p>No urgent records found.</p>\";\n    }\n\n    // --- 0. Initialize and Calculate Counts ---\n    const counts = { total: items.length, critical: 0, high: 0, open: 0, inProgress: 0 };\n    items.forEach(item => {\n        const priority = item.json.priority ? item.json.priority.toLowerCase() : '';\n        const status = item.json.status ? item.json.status.toLowerCase() : '';\n        if (priority === 'critical') counts.critical++;\n        else if (priority === 'high') counts.high++;\n        if (status === 'open') counts.open++;\n        else if (status === 'in progress') counts.inProgress++;\n    });\n\n    // --- 1. Define Columns ---\n    const columns = [\n        ['Id', 'ID'], \n        ['request_title', 'Title'],\n        ['support_description', 'Description'],\n        ['priority', 'Priority'],\n        ['status', 'Status'],\n        ['CreatedAt', 'Created On'], \n        ['department', 'Department'],\n        ['assigned_to', 'Assigned To']\n    ];\n    \n    // --- Define Basic Inline Styles ---\n    const tableStyle = \"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\";\n    const cellStyle = \"border: 1px solid #000; padding: 8px; text-align: left;\";\n    const headerStyle = cellStyle + \" background-color: #eee;\";\n\n    // --- 2. Build HTML Output ---\n    let html = `<h3 style=\"font-family: Arial, sans-serif;\">Urgent Tickets Summary</h3>`;\n\n    // Summary Table\n    html += `<table style=\"${tableStyle} margin-bottom: 15px;\">\n        <thead>\n            <tr>\n                <th style=\"${headerStyle}\">Total</th>\n                <th style=\"${headerStyle}\">Critical</th>\n                <th style=\"${headerStyle}\">High</th>\n                <th style=\"${headerStyle}\">Open</th>\n                <th style=\"${headerStyle}\">In Progress</th>\n            </tr>\n        </thead>\n        <tbody>\n            <tr>\n                <td style=\"${cellStyle}\">${counts.total}</td>\n                <td style=\"${cellStyle}\">${counts.critical}</td>\n                <td style=\"${cellStyle}\">${counts.high}</td>\n                <td style=\"${cellStyle}\">${counts.open}</td>\n                <td style=\"${cellStyle}\">${counts.inProgress}</td>\n            </tr>\n        </tbody>\n    </table>`;\n\n    // Details Table\n    html += `<table style=\"${tableStyle}\">\n        <thead>\n            <tr>\n              ${columns.map(col => `<th style=\"${headerStyle}\">${col[1]}</th>`).join('')}\n            </tr>\n        </thead>\n        <tbody>`;\n\n    // Loop through Items and Add Rows\n    items.forEach(item => {\n        html += `<tr>`;\n        columns.forEach(col => {\n            const fieldName = col[0];\n            let cellData = item.json[fieldName] !== undefined ? item.json[fieldName] : '';\n            \n            // Formatting for 'CreatedAt'\n            if (fieldName === 'CreatedAt' && cellData) {\n                try {\n                    cellData = new Date(cellData).toLocaleString('en-US', { \n                        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' \n                    });\n                } catch (e) { }\n            }\n            \n            // Clean up linked fields (no linking/HTML needed)\n            if (typeof cellData === 'object' && cellData !== null) {\n                cellData = Array.isArray(cellData) ? \n                           cellData.map(c => c.name || c.id).join(', ') : \n                           (cellData.name || cellData.id || ''); \n            }\n\n            html += `<td style=\"${cellStyle}\">${cellData}</td>`;\n        });\n        html += `</tr>`;\n    });\n\n    // Close HTML\n    html += `</tbody></table>`;\n\n    return [{ json: { htmlTable: html } }];\n}\n\nreturn generateHtmlTable($input.all());"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "6097f7dc-ae6f-4010-ae50-39d367700db9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "daily records",
+        "message": "={{ $json.htmlTable }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "350ac561-6c28-459e-be2b-9754f3dec21a",
+      "name": "Send a message",
+      "webhookId": "12a20cfe-3c66-48d6-8e9d-fc4105b6f032",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4dfa08f2-2fd4-4cb8-bc2e-f0d5e270ada4",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d886aa70-77a9-41cb-8fea-91d74678be01",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
+  },
+  "id": "pOpiInYAqjdPEP2u",
+  "tags": []
+}

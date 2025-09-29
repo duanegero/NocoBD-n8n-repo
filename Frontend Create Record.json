@@ -1,0 +1,178 @@
+{
+  "name": "Frontend Create Record",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "6b1b4bf7-a133-4092-9cf5-598818017151",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        -176
+      ],
+      "id": "95cd3b2d-a165-47b5-a054-000d5340ded5",
+      "name": "Webhook",
+      "webhookId": "6b1b4bf7-a133-4092-9cf5-598818017151"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "p7awyatqrlauhhz",
+        "table": "mvcdyjrtodxgbj0",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "request_title",
+              "fieldValue": "={{ $json.body.title }}"
+            },
+            {
+              "fieldName": "priority",
+              "fieldValue": "={{ $json.body.priority }}"
+            },
+            {
+              "fieldName": "department",
+              "fieldValue": "={{ $json.body.department }}"
+            },
+            {
+              "fieldName": "support_description",
+              "fieldValue": "={{ $json.body.description }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -192,
+        -176
+      ],
+      "id": "033a3aaf-4cc0-45bb-be5b-19803849f4e8",
+      "name": "Create a row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "0jPJYo279HZvTqNL",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ba7c055-c2f6-4022-b8da-1ba48163e2e4",
+              "leftValue": "={{ $json.priority }}",
+              "rightValue": "=Critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "afdee01a-7809-447a-a21b-5f4b9467f50a",
+              "leftValue": "={{ $json.priority }}",
+              "rightValue": "=High",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        -176
+      ],
+      "id": "47756c7d-7c31-49ef-9ec9-71ddb3e3b3fd",
+      "name": "Priority If"
+    },
+    {
+      "parameters": {
+        "sendTo": "duanespam7@gmail.com",
+        "subject": "={{ $json.priority }} - Request",
+        "message": "={{ $('Create a row').item.json.request_title }}<br>\n{{ $('Create a row').item.json.department }}<br>\n{{ $('Create a row').item.json.priority }}<br>\n{{ $('Create a row').item.json.support_description }}<br>\n<p>\n  <a href=\"http://localhost:8080/dashboard/#/nc/p7awyatqrlauhhz/mvcdyjrtodxgbj0?rowId={{ $('Create a row').item.json.Id }}\" \n     target=\"_blank\" \n     style=\"color:#007bff; text-decoration:none; font-weight:bold;\">\n    🔗 View Ticket in NocoDB\n  </a>\n</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -176
+      ],
+      "id": "78600058-ab0b-41dd-8d80-97d23f20fbca",
+      "name": "Critical/High Priority Email",
+      "webhookId": "b7d88cd3-1b3f-4e07-af3a-0d5596acc054",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priority If": {
+      "main": [
+        [
+          {
+            "node": "Critical/High Priority Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Priority If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7de799b-0c8f-498e-ae65-f970c9bb6320",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
+  },
+  "id": "RslEIPfl10ukIQC7",
+  "tags": []
+}
