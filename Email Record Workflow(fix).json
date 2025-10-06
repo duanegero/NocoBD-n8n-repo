@@ -1,0 +1,432 @@
+{
+  "name": "Email Record Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9a8a8ed5-bb8d-4208-a8b5-f74ba0a40e39",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        -1504
+      ],
+      "id": "5c3cb9f9-db48-4111-83c9-377811205ca4",
+      "name": "Email Record Webhook",
+      "webhookId": "9a8a8ed5-bb8d-4208-a8b5-f74ba0a40e39"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.data.rows[0].Attachments",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -1600
+      ],
+      "id": "3bd0190b-4ace-4cca-83e3-af84f0c09ff3",
+      "name": "Split Attachments",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=http://nocodb:8080/{{ $('Split Attachments').item.json['body.data.rows[0].Attachments'].signedPath }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        -1600
+      ],
+      "id": "e8cc1f0f-cceb-423c-ac22-d73e7e239f76",
+      "name": "HTTP Request (GET Attachments)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allBinary = {};\n\nfor (const item of $input.all()) {\n    if (item.binary) {\n        for (const key of Object.keys(item.binary)) {\n            // Use the original filename as the key to prevent overwriting\n            const originalFileName = item.binary[key].fileName;\n            allBinary[originalFileName] = item.binary[key];\n        }\n    }\n}\n\n// Return the result under a single field named 'mergedFiles'\nreturn [{\n    binary: {\n        mergedFiles: allBinary\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -1792
+      ],
+      "id": "81b078fe-5b04-42f9-a39b-745c504a842e",
+      "name": "Collect All Binary Files"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\" />\n    <title>Report</title>\n    <style>\n        /* Define a modern color palette */\n        :root {\n            --primary-color: #007bff; /* Bright, professional blue */\n            --text-dark: #212529;    /* Near-black text */\n            --text-light: #495057;   /* Muted text for values */\n            --bg-light: #f8f9fa;     /* Very light background */\n            --border-color: #e9ecef; /* Light gray border */\n        }\n\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            background-color: var(--bg-light);\n            margin: 0;\n            padding: 20px;\n            line-height: 1.6;\n        }\n        .container {\n            background-color: #ffffff;\n            max-width: 650px;\n            margin: 20px auto;\n            padding: 0;\n            border-radius: 12px;\n            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);\n            overflow: hidden;\n        }\n        \n        /* === UPDATED HEADER STYLES === */\n        .header {\n            text-align: left; /* Align text to the left */\n            padding: 30px 30px 20px 30px; /* Padding for spacing */\n            background-color: #ffffff; /* White background */\n            border-bottom: 4px solid var(--primary-color); /* Thin blue accent line */\n            margin-bottom: 10px; /* Space before content starts */\n        }\n        h1 {\n            color: var(--primary-color); /* Blue title text */\n            font-size: 28px;\n            font-weight: 600;\n            margin: 0 0 5px 0; /* Add a little space below the title */\n            line-height: 1.2;\n        }\n        h2 {\n            display: block; /* Make h2 visible for a subtitle */\n            color: var(--text-light); /* Muted gray subtitle */\n            font-size: 14px;\n            font-weight: 500;\n            margin: 0;\n            text-transform: uppercase;\n            letter-spacing: 1px;\n        }\n        /* ============================== */\n        \n        .content {\n            padding: 30px;\n        }\n        .data-row {\n            margin-bottom: 0;\n            padding: 15px 0;\n            border-bottom: 1px solid var(--border-color);\n            display: flex;\n            align-items: top;\n        }\n        .data-row:last-child {\n            border-bottom: none;\n        }\n        .label {\n            font-weight: 600;\n            color: var(--text-dark);\n            flex: 0 0 35%;\n            margin-right: 20px;\n            padding-right: 15px;\n            font-size: 15px;\n            text-align: left;\n        }\n        .value {\n            color: var(--text-light);\n            font-size: 15px;\n            flex: 1;\n            margin: 0;\n            padding: 0;\n        }\n        .data-row p.value {\n            margin-top: 0;\n            margin-bottom: 0;\n        }\n    </style>\n</head>\n<body>\n\n<div class=\"container\">\n    <div class=\"header\">\n        <h1>{{ $json.body.data.rows[0]['SPR Title'] }}</h1>\n        <h2>System Problem Report Details</h2>\n    </div>\n\n    <div class=\"content\">\n        \n        <div class=\"data-row\">\n            <span class=\"label\">SPR Description:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['SPR Description'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Fleet:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Fleet }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Current Phase:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Current phase'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Priority:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Priority }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Next Steps:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Next Steps'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Fix:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Fix }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Aircraft Registration:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Aircraft Registration'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Affected Subsystem:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Affected Subsystem'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Created By:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Created By'].email }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Created At:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].CreatedAt }}</p>\n        </div>\n    </div>\n\n</div>\n\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -1408
+      ],
+      "id": "6f045ee4-6751-4042-a25d-0f6fc25df992",
+      "name": "Create HTML Doc"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the HTML data from the input\nconst htmlData = $input.item.json.html;\n\n// Create a buffer from the HTML data\nconst htmlBuffer = Buffer.from(htmlData, 'utf8');\n\n// Define the file object\nconst htmlFile = {\n  fileName: 'record.html',\n  mimeType: 'text/html',\n  data: htmlBuffer,\n};\n\n// Return a new item with the file data in the 'binary' field\n// and all the original JSON data in the 'json' field\nreturn [{\n  json: { ...$input.item.json },\n  binary: {\n    htmlFile: htmlFile,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        -1408
+      ],
+      "id": "428973bd-4c50-43ad-9651-b1f31c6cfef4",
+      "name": "Convert HTML to Binary File"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Email Record Webhook').item.json.body.data.rows[0]['Recipient Email'] }}",
+        "subject": "={{ $('Email Record Webhook').item.json.body.data.table_name }} - {{ $('Email Record Webhook').item.json.body.data.rows[0]['SPR Title'] }}",
+        "message": "=Hello\n<br>\n<br>\nPlease find attached the requested record, along with any relevant supporting documents.\n<br>\n<br>\nThank you.",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "=data"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        704,
+        -1408
+      ],
+      "id": "d9184031-f231-422d-8636-7b1a4fb1e0e2",
+      "name": "Email Record Components",
+      "webhookId": "d11e036b-3ab7-462f-8a4c-d717426eafe8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EqoPSsvtVs4G9IFB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "ptkf7qrqtlmqgh9",
+        "table": "m6r9hwmylgfhbyz",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Id",
+              "fieldValue": "={{ $('Email Record Webhook').item.json.body.data.rows[0].Id }}"
+            },
+            {
+              "fieldName": "=Recipient Email",
+              "fieldValue": "="
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        928,
+        -1408
+      ],
+      "id": "e8e7fede-3321-43d4-8eb9-6c159dac1f4d",
+      "name": "Update Recipient Email Row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "aF3os1sqkzTgcJhc",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0e7e19a-877d-45fd-ae16-c4dcaab20a1e",
+              "leftValue": "={{ $('Email Record Webhook').item.json.body.data.rows[0].Attachments }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -1504
+      ],
+      "id": "3116534b-cfca-4ca1-90a3-fda4e16ebd35",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conversionType": "htmlToPdf",
+        "inputSource": "binaryData",
+        "binaryPropertyName": "htmlFile",
+        "additionalOptions": {
+          "format": "A4"
+        },
+        "htmlOptions": {
+          "ignoreHTTPSErrors": false
+        }
+      },
+      "type": "n8n-nodes-dante-pdf.dantePdf",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -1408
+      ],
+      "id": "2ea6f53c-1235-453d-bb24-64e7741f9ce7",
+      "name": "Dante PDF"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "ptkf7qrqtlmqgh9",
+        "table": "m6r9hwmylgfhbyz",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Id",
+              "fieldValue": "={{ $('Email Record Webhook').item.json.body.data.rows[0].Id }}"
+            },
+            {
+              "fieldName": "=Recipient Email",
+              "fieldValue": "="
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1152,
+        -1600
+      ],
+      "id": "e0fcbdf8-6f1b-4586-aaba-41e5d7346b24",
+      "name": "Update Recipient Email Row1",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "aF3os1sqkzTgcJhc",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "96e79096-429c-4933-9e6d-d91b8577f8bb",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -1600
+      ],
+      "id": "86c75dbf-ba04-4831-8508-91cbf775c0e1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Email Record Webhook').first().json.body.data.rows[0]['Recipient Email'] }}\n",
+        "subject": "={{ $('Email Record Webhook').first().json.body.data.rows[0]['SPR Title'] }}",
+        "message": "=Hello\n<br>\n<br>\nPlease find attached the requested record, along with any relevant supporting documents.\n<br>\n<br>\nThank you.",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        928,
+        -1600
+      ],
+      "id": "03d05c67-a7f6-473b-8d63-adb162fb69b8",
+      "name": "Email Record Components1",
+      "webhookId": "d11e036b-3ab7-462f-8a4c-d717426eafe8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EqoPSsvtVs4G9IFB",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Record Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Attachments": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request (GET Attachments)": {
+      "main": [
+        [
+          {
+            "node": "Email Record Components1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Binary Files": {
+      "main": [
+        []
+      ]
+    },
+    "Create HTML Doc": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to Binary File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to Binary File": {
+      "main": [
+        [
+          {
+            "node": "Dante PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Record Components": {
+      "main": [
+        [
+          {
+            "node": "Update Recipient Email Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Split Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create HTML Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dante PDF": {
+      "main": [
+        [
+          {
+            "node": "Email Record Components",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request (GET Attachments)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Record Components1": {
+      "main": [
+        [
+          {
+            "node": "Update Recipient Email Row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f73325ae-d100-4454-9e7c-a493f42ea6b2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "54c549f86c0cebef030071f971d243baa4732674d184820678218778e58a14fd"
+  },
+  "id": "PV3UzyIdUqcdSrqk",
+  "tags": []
+}
