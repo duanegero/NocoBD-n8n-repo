@@ -1,5 +1,5 @@
 {
-  "name": "Email Record Workflow",
+  "name": "My workflow 2",
   "nodes": [
     {
       "parameters": {
@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -416,
-        -1504
+        -1072,
+        400
       ],
-      "id": "5c3cb9f9-db48-4111-83c9-377811205ca4",
+      "id": "ac99b7ff-f95a-44d3-aed3-d380b1836b32",
       "name": "Email Record Webhook",
       "webhookId": "9a8a8ed5-bb8d-4208-a8b5-f74ba0a40e39"
     },
@@ -26,10 +26,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        32,
-        -1600
+        -624,
+        304
       ],
-      "id": "3bd0190b-4ace-4cca-83e3-af84f0c09ff3",
+      "id": "ca1752f8-5471-41af-a626-e98d8d8cfcb1",
       "name": "Split Attachments",
       "alwaysOutputData": false
     },
@@ -41,36 +41,23 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
-        -1600
+        -176,
+        376
       ],
-      "id": "e8cc1f0f-cceb-423c-ac22-d73e7e239f76",
+      "id": "5aeb6828-e4dd-4d85-8872-ae34c1b01893",
       "name": "HTTP Request (GET Attachments)"
     },
     {
       "parameters": {
-        "jsCode": "const allBinary = {};\n\nfor (const item of $input.all()) {\n    if (item.binary) {\n        for (const key of Object.keys(item.binary)) {\n            // Use the original filename as the key to prevent overwriting\n            const originalFileName = item.binary[key].fileName;\n            allBinary[originalFileName] = item.binary[key];\n        }\n    }\n}\n\n// Return the result under a single field named 'mergedFiles'\nreturn [{\n    binary: {\n        mergedFiles: allBinary\n    }\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        656,
-        -1792
-      ],
-      "id": "81b078fe-5b04-42f9-a39b-745c504a842e",
-      "name": "Collect All Binary Files"
-    },
-    {
-      "parameters": {
-        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\" />\n    <title>Report</title>\n    <style>\n        /* Define a modern color palette */\n        :root {\n            --primary-color: #007bff; /* Bright, professional blue */\n            --text-dark: #212529;    /* Near-black text */\n            --text-light: #495057;   /* Muted text for values */\n            --bg-light: #f8f9fa;     /* Very light background */\n            --border-color: #e9ecef; /* Light gray border */\n        }\n\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            background-color: var(--bg-light);\n            margin: 0;\n            padding: 20px;\n            line-height: 1.6;\n        }\n        .container {\n            background-color: #ffffff;\n            max-width: 650px;\n            margin: 20px auto;\n            padding: 0;\n            border-radius: 12px;\n            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);\n            overflow: hidden;\n        }\n        \n        /* === UPDATED HEADER STYLES === */\n        .header {\n            text-align: left; /* Align text to the left */\n            padding: 30px 30px 20px 30px; /* Padding for spacing */\n            background-color: #ffffff; /* White background */\n            border-bottom: 4px solid var(--primary-color); /* Thin blue accent line */\n            margin-bottom: 10px; /* Space before content starts */\n        }\n        h1 {\n            color: var(--primary-color); /* Blue title text */\n            font-size: 28px;\n            font-weight: 600;\n            margin: 0 0 5px 0; /* Add a little space below the title */\n            line-height: 1.2;\n        }\n        h2 {\n            display: block; /* Make h2 visible for a subtitle */\n            color: var(--text-light); /* Muted gray subtitle */\n            font-size: 14px;\n            font-weight: 500;\n            margin: 0;\n            text-transform: uppercase;\n            letter-spacing: 1px;\n        }\n        /* ============================== */\n        \n        .content {\n            padding: 30px;\n        }\n        .data-row {\n            margin-bottom: 0;\n            padding: 15px 0;\n            border-bottom: 1px solid var(--border-color);\n            display: flex;\n            align-items: top;\n        }\n        .data-row:last-child {\n            border-bottom: none;\n        }\n        .label {\n            font-weight: 600;\n            color: var(--text-dark);\n            flex: 0 0 35%;\n            margin-right: 20px;\n            padding-right: 15px;\n            font-size: 15px;\n            text-align: left;\n        }\n        .value {\n            color: var(--text-light);\n            font-size: 15px;\n            flex: 1;\n            margin: 0;\n            padding: 0;\n        }\n        .data-row p.value {\n            margin-top: 0;\n            margin-bottom: 0;\n        }\n    </style>\n</head>\n<body>\n\n<div class=\"container\">\n    <div class=\"header\">\n        <h1>{{ $json.body.data.rows[0]['SPR Title'] }}</h1>\n        <h2>System Problem Report Details</h2>\n    </div>\n\n    <div class=\"content\">\n        \n        <div class=\"data-row\">\n            <span class=\"label\">SPR Description:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['SPR Description'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Fleet:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Fleet }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Current Phase:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Current phase'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Priority:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Priority }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Next Steps:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Next Steps'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Fix:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].Fix }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Aircraft Registration:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Aircraft Registration'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Affected Subsystem:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Affected Subsystem'] }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Created By:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0]['Created By'].email }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Created At:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].CreatedAt }}</p>\n        </div>\n    </div>\n\n</div>\n\n</body>\n</html>"
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\" />\n    <title>Report</title>\n    <style>\n        /* Define a modern color palette */\n        :root {\n            --primary-color: #007bff; /* Bright, professional blue */\n            --text-dark: #212529;    /* Near-black text */\n            --text-light: #495057;   /* Muted text for values */\n            --bg-light: #f8f9fa;     /* Very light background */\n            --border-color: #e9ecef; /* Light gray border */\n        }\n\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            background-color: var(--bg-light);\n            margin: 0;\n            padding: 20px;\n            line-height: 1.6;\n        }\n        .container {\n            background-color: #ffffff;\n            max-width: 650px;\n            margin: 20px auto;\n            padding: 0;\n            border-radius: 12px;\n            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);\n            overflow: hidden;\n        }\n        \n        /* === UPDATED HEADER STYLES === */\n        .header {\n            text-align: left; /* Align text to the left */\n            padding: 30px 30px 20px 30px; /* Padding for spacing */\n            background-color: #ffffff; /* White background */\n            border-bottom: 4px solid var(--primary-color); /* Thin blue accent line */\n            margin-bottom: 10px; /* Space before content starts */\n        }\n        h1 {\n            color: var(--primary-color); /* Blue title text */\n            font-size: 28px;\n            font-weight: 600;\n            margin: 0 0 5px 0; /* Add a little space below the title */\n            line-height: 1.2;\n        }\n        h2 {\n            display: block; /* Make h2 visible for a subtitle */\n            color: var(--text-light); /* Muted gray subtitle */\n            font-size: 14px;\n            font-weight: 500;\n            margin: 0;\n            text-transform: uppercase;\n            letter-spacing: 1px;\n        }\n        /* ============================== */\n        \n        .content {\n            padding: 30px;\n        }\n        .data-row {\n            margin-bottom: 0;\n            padding: 15px 0;\n            border-bottom: 1px solid var(--border-color);\n            display: flex;\n            align-items: top;\n        }\n        .data-row:last-child {\n            border-bottom: none;\n        }\n        .label {\n            font-weight: 600;\n            color: var(--text-dark);\n            flex: 0 0 35%;\n            margin-right: 20px;\n            padding-right: 15px;\n            font-size: 15px;\n            text-align: left;\n        }\n        .value {\n            color: var(--text-light);\n            font-size: 15px;\n            flex: 1;\n            margin: 0;\n            padding: 0;\n        }\n        .data-row p.value {\n            margin-top: 0;\n            margin-bottom: 0;\n        }\n    </style>\n</head>\n<body>\n\n<div class=\"container\">\n    <div class=\"header\">\n        <h1>{{ $json.body.data.rows[0].request_title }}</h1>\n    </div>\n\n    <div class=\"content\">\n        \n        <div class=\"data-row\">\n            <span class=\"label\"></span>\n            <p class=\"value\">{{ $json.body.data.rows[0].support_description }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <p class=\"value\">{{ $json.body.data.rows[0].priority }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <p class=\"value\">{{ $json.body.data.rows[0].status }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <p class=\"value\">{{ $json.body.data.rows[0].department }}</p>\n        </div>\n\n        <div class=\"data-row\">\n            <span class=\"label\">Created At:</span>\n            <p class=\"value\">{{ $json.body.data.rows[0].CreatedAt }}</p>\n        </div>\n    </div>\n\n</div>\n\n</body>\n</html>"
       },
       "type": "n8n-nodes-base.html",
       "typeVersion": 1.2,
       "position": [
-        32,
-        -1408
+        -624,
+        568
       ],
-      "id": "6f045ee4-6751-4042-a25d-0f6fc25df992",
+      "id": "e063f62c-8c6f-4c55-9291-df96422eb709",
       "name": "Create HTML Doc"
     },
     {
@@ -80,76 +67,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        256,
-        -1408
+        -400,
+        568
       ],
-      "id": "428973bd-4c50-43ad-9651-b1f31c6cfef4",
+      "id": "b728a85d-f435-4b34-a2de-99b92d21e5c0",
       "name": "Convert HTML to Binary File"
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $('Email Record Webhook').item.json.body.data.rows[0]['Recipient Email'] }}",
-        "subject": "={{ $('Email Record Webhook').item.json.body.data.table_name }} - {{ $('Email Record Webhook').item.json.body.data.rows[0]['SPR Title'] }}",
-        "message": "=Hello\n<br>\n<br>\nPlease find attached the requested record, along with any relevant supporting documents.\n<br>\n<br>\nThank you.",
-        "options": {
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              {
-                "property": "=data"
-              }
-            ]
-          }
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        704,
-        -1408
-      ],
-      "id": "d9184031-f231-422d-8636-7b1a4fb1e0e2",
-      "name": "Email Record Components",
-      "webhookId": "d11e036b-3ab7-462f-8a4c-d717426eafe8",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "EqoPSsvtVs4G9IFB",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "nocoDbApiToken",
-        "operation": "update",
-        "projectId": "ptkf7qrqtlmqgh9",
-        "table": "m6r9hwmylgfhbyz",
-        "fieldsUi": {
-          "fieldValues": [
-            {
-              "fieldName": "Id",
-              "fieldValue": "={{ $('Email Record Webhook').item.json.body.data.rows[0].Id }}"
-            },
-            {
-              "fieldName": "=Recipient Email",
-              "fieldValue": "="
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.nocoDb",
-      "typeVersion": 3,
-      "position": [
-        928,
-        -1408
-      ],
-      "id": "e8e7fede-3321-43d4-8eb9-6c159dac1f4d",
-      "name": "Update Recipient Email Row",
-      "credentials": {
-        "nocoDbApiToken": {
-          "id": "aF3os1sqkzTgcJhc",
-          "name": "NocoDB Token account"
-        }
-      }
     },
     {
       "parameters": {
@@ -179,10 +101,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -192,
-        -1504
+        -848,
+        400
       ],
-      "id": "3116534b-cfca-4ca1-90a3-fda4e16ebd35",
+      "id": "03c8d19f-c3f8-4970-a24b-6940eaceb6f5",
       "name": "If"
     },
     {
@@ -200,10 +122,10 @@
       "type": "n8n-nodes-dante-pdf.dantePdf",
       "typeVersion": 1,
       "position": [
-        480,
-        -1408
+        -176,
+        568
       ],
-      "id": "2ea6f53c-1235-453d-bb24-64e7741f9ce7",
+      "id": "84d6f4a2-769d-488b-9688-4ab8d5c7129f",
       "name": "Dante PDF"
     },
     {
@@ -228,14 +150,14 @@
       "type": "n8n-nodes-base.nocoDb",
       "typeVersion": 3,
       "position": [
-        1152,
-        -1600
+        272,
+        568
       ],
-      "id": "e0fcbdf8-6f1b-4586-aaba-41e5d7346b24",
+      "id": "92d7f342-0f1c-437d-9e72-ef09c1117c4e",
       "name": "Update Recipient Email Row1",
       "credentials": {
         "nocoDbApiToken": {
-          "id": "aF3os1sqkzTgcJhc",
+          "id": "0jPJYo279HZvTqNL",
           "name": "NocoDB Token account"
         }
       }
@@ -257,16 +179,16 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        256,
-        -1600
+        -400,
+        304
       ],
-      "id": "86c75dbf-ba04-4831-8508-91cbf775c0e1",
+      "id": "6795d7dd-aec2-466c-9ca5-6a28ed78aa44",
       "name": "Edit Fields"
     },
     {
       "parameters": {
         "sendTo": "={{ $('Email Record Webhook').first().json.body.data.rows[0]['Recipient Email'] }}\n",
-        "subject": "={{ $('Email Record Webhook').first().json.body.data.rows[0]['SPR Title'] }}",
+        "subject": "={{ $json.body.data.rows[0].request_title }}",
         "message": "=Hello\n<br>\n<br>\nPlease find attached the requested record, along with any relevant supporting documents.\n<br>\n<br>\nThank you.",
         "options": {
           "attachmentsUi": {
@@ -279,15 +201,84 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        928,
-        -1600
+        48,
+        568
       ],
-      "id": "03d05c67-a7f6-473b-8d63-adb162fb69b8",
+      "id": "3bb03387-9c43-46d7-89b7-fb16ab539cdc",
       "name": "Email Record Components1",
       "webhookId": "d11e036b-3ab7-462f-8a4c-d717426eafe8",
       "credentials": {
         "gmailOAuth2": {
-          "id": "EqoPSsvtVs4G9IFB",
+          "id": "x5oMdl7QcWqIyc0G",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "clashHandling": {
+            "values": {
+              "resolveClash": "addSuffix"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        304
+      ],
+      "id": "a2cb9a2a-c203-4289-8460-b4d0758bc825",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "attachments",
+        "options": {
+          "includeBinaries": true
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        48,
+        376
+      ],
+      "id": "cd5e1800-6ec1-4b8d-b13f-b6a21652426c",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.attachments_1[0].body.data.rows[0]['Recipient Email'] }}",
+        "subject": "={{ $json.attachments_1[0].body.data.rows[0].request_title }}",
+        "message": "={{ $json.attachments_1[0].body.data.rows[0].support_description }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "={{ Object.keys($binary || {}).join(',') }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        496,
+        304
+      ],
+      "id": "c1ec578d-2ba6-4034-99c9-4408925833de",
+      "name": "Send a message",
+      "webhookId": "eabac30b-5d7e-4e44-be91-a77a8dc719b5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x5oMdl7QcWqIyc0G",
           "name": "Gmail account"
         }
       }
@@ -321,16 +312,11 @@
       "main": [
         [
           {
-            "node": "Email Record Components1",
+            "node": "Aggregate",
             "type": "main",
             "index": 0
           }
         ]
-      ]
-    },
-    "Collect All Binary Files": {
-      "main": [
-        []
       ]
     },
     "Create HTML Doc": {
@@ -349,17 +335,6 @@
         [
           {
             "node": "Dante PDF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Email Record Components": {
-      "main": [
-        [
-          {
-            "node": "Update Recipient Email Row",
             "type": "main",
             "index": 0
           }
@@ -388,7 +363,7 @@
       "main": [
         [
           {
-            "node": "Email Record Components",
+            "node": "Email Record Components1",
             "type": "main",
             "index": 0
           }
@@ -402,6 +377,11 @@
             "node": "HTTP Request (GET Attachments)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -416,17 +396,39 @@
           }
         ]
       ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f73325ae-d100-4454-9e7c-a493f42ea6b2",
+  "versionId": "40d4e8fd-1a84-469f-92e6-751ef162637f",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "54c549f86c0cebef030071f971d243baa4732674d184820678218778e58a14fd"
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
   },
-  "id": "PV3UzyIdUqcdSrqk",
+  "id": "g4ApgJfBBPovPRQ5",
   "tags": []
 }
