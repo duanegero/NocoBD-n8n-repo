@@ -1,0 +1,189 @@
+{
+  "name": "Sanitize Data",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "pi4xgitxeykvt02",
+        "table": "mhg27vcckd7x2y0",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -144,
+        144
+      ],
+      "id": "fc396a35-d04a-4ca1-a577-b403873f869b",
+      "name": "Get many rows",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "0jPJYo279HZvTqNL",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bced0235-e40f-4583-88b5-3419b75bd80b",
+              "name": "CreatedAt",
+              "value": "={{ $json.CreatedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "977613ed-cb44-4ae3-a4fc-00b5307f7869",
+              "name": "UpdatedAt",
+              "value": "={{ $json.UpdatedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "8e3b247f-6c82-4ef1-a312-cd0008b2f41a",
+              "name": "department",
+              "value": "={{ $json.department }}",
+              "type": "string"
+            },
+            {
+              "id": "d1e8fa45-ebca-46d9-9b81-367ffb9941e5",
+              "name": "priority",
+              "value": "={{ $json.priority }}",
+              "type": "string"
+            },
+            {
+              "id": "3cb3cb97-f0b8-415d-b306-222c2921cfcc",
+              "name": "resolution",
+              "value": "={{ $json.resolution }}",
+              "type": "string"
+            },
+            {
+              "id": "9a3ccfa5-bf46-40a0-8889-beb3de7a85ec",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "10687ad8-3ffb-4252-8f11-fbab591c088f",
+              "name": "request_title",
+              "value": "={{ $json.request_title }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        144
+      ],
+      "id": "d296a1ba-cd7a-407a-9b75-8767ac5751e3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        528,
+        144
+      ],
+      "id": "17a5ce99-5da4-4296-946f-de60e441bdd3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "path": "sanitize_rows",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        144
+      ],
+      "id": "22787c30-7965-4f63-aa7a-dc2d33b055c9",
+      "name": "Webhook",
+      "webhookId": "c6f0b0c4-2a2c-454d-8311-231f4d767d78"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      tickets: items.map(item => item.json),\n      total_count: items.length\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        144
+      ],
+      "id": "e21270e2-2027-4d49-ac42-44a704865262",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "408483ee-e5d7-480f-bc2f-ce6e0b15d3da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
+  },
+  "id": "eFhikv1mta48d9Wd",
+  "tags": []
+}

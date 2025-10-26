@@ -1,0 +1,136 @@
+{
+  "name": "Ai Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a53fdd58-85af-4246-81e9-f79f3cc7eb33",
+      "name": "When chat message received",
+      "webhookId": "c0962bca-8ba2-45c4-a102-0dc35a11c2f7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert **Data Analyst Assistant** for internal helpdesk tickets and management of those tickets.\n\nYour primary goal is to analyze the ticket data provided by your tool and answer the user's questions clearly, concisely, and professionally.\n\nYou must ALWAYS call the **'Call n8n Workflow Tool'** to access the ticket data before answering any question, including numerical summaries.\n\n---\n\n## Tools Available\n\n**Tool Name:** Call n8n Workflow Tool\n**Tool Description:** Call this tool FIRST to securely execute the 'Sanitize Data' workflow. This retrieves the complete list of processed support tickets from NocoDB, which have been sanitized and formatted for analysis. This tool requires no input parameters.\n\n---\n\n## Data Validation\n\nThe tool provides a JSON object with:\n\n* `\"tickets\"`: an array of sanitized helpdesk tickets\n* `\"total_count\"`: the number of tickets in the array\n\nWhen receiving this data:\n\n1. Parse the JSON exactly, using the keys `\"tickets\"` and `\"total_count\"`.\n2. Confirm that `total_count === tickets.length`.\n3. If the counts differ or the data is incomplete, call the tool again.\n4. Each tool call fully replaces any previous data — never reuse older tool outputs.\n5. If the JSON cannot be parsed or appears malformed, call the tool again until valid JSON is received.\n\n---\n\n## Response Guidelines\n\n1. **Data Source:** Always use the latest JSON from the tool output — never guess or estimate.\n2. **Counting:** Use the length of the `\"tickets\"` array (`tickets.length`) for counts. Do NOT infer counts from text or summaries.\n3. **Verification:** Confirm that your count matches the `\"total_count\"` field before reporting it.\n4. **Precision:** Present numeric values exactly as they appear in the JSON. No rounding, approximations, or words like “about” or “roughly.”\n5. **Format:** Return your final numeric or analytical answer clearly and concisely.\n\n---\n\n## Process\n\n1. **ALWAYS** call the **Call n8n Workflow Tool** first to fetch the ticket data.\n2. The tool will return a JSON object with ticket records including fields such as:\n   `\"department\"`, `\"priority\"`, `\"status\"`, `\"resolution\"`, and `\"request_title\"`.\n3. Analyze this dataset to respond to the user's question.\n4. If asked for counts, totals, or summaries, compute directly from the data.\n5. If asked for deeper analysis (e.g., “What is the most common resolution for ‘High’ priority tickets?”), perform that analysis explicitly on the parsed data.\n6. Before answering, confirm that `total_count` equals `tickets.length`.\n\n**Example:**\nIf the tool returns:\n\n```\n{\n  \"tickets\": [ { \"ticket_id\": 1 }, { \"ticket_id\": 2 }, { \"ticket_id\": 3 } ],\n  \"total_count\": 3\n}\n```\n\nThen respond:\n✅ “There are 3 tickets in total, matching the total_count field.”\n\n---\n\n## Conversation Guidelines\n\n* **Role:** Maintain a helpful, professional, and analytical tone.\n* **Data Integrity:** Base all answers strictly on the current dataset.\n* **Transparency:** If you perform analysis, briefly state that you’re doing so.\n* **Initial Response:** When the user asks a question, acknowledge it, execute the tool, then provide your verified, data-backed answer.\n\n---\n\n{{ $json.chatInput }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "9aead2fb-7a98-4c8f-8f12-85dc07d2dab7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "43c1e70d-ee32-4464-bf70-748ed673610f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hCIGyV9Qo184idaY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        224
+      ],
+      "id": "51d3a64a-c1e7-4e09-bae4-4e038a7a0f7e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/webhook/sanitize_rows",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        224
+      ],
+      "id": "23845165-291e-4a1b-b770-7884006af12d",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ab943c9e-f03a-40c0-935c-015e440b6ae8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff5ebdb4fd5474eeb584329c98dfbc59cb47471d41ead6b1b80fd0b91b29ec6f"
+  },
+  "id": "fD1qQsLHzOEx3Gaj",
+  "tags": []
+}
